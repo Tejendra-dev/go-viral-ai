@@ -14,5 +14,5 @@ export default async function ProfilePage() {
     redirect("/auth/login")
   }
 
-  return <ProfileClient user={user} />
+  return <ProfileClient user={user as { id: string; email: string }} />
 }

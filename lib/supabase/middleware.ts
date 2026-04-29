@@ -31,11 +31,11 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (user && (request.nextUrl.pathname.startsWith("/auth/login") || request.nextUrl.pathname.startsWith("/auth/signup"))) {
-    const returnUrl = request.nextUrl.searchParams.get("returnUrl") || "/listen"
+    const returnUrl = request.nextUrl.searchParams.get("returnUrl") || "/analyze"
     return NextResponse.redirect(new URL(returnUrl, request.url))
   }
 
-  // Allow unauthenticated users to access /listen for preview mode
+  // Allow unauthenticated users to access /analyze for preview mode
   // The audio player will enforce preview limits and show upgrade prompts
 
   return supabaseResponse

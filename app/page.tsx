@@ -1,114 +1,67 @@
-import { Navigation } from "@/components/navigation"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { Check, Sparkles, Zap, Shield, Users } from "lucide-react"
+import { Zap, TrendingUp, Hash, Music, Users, Target, ArrowRight, Star } from "lucide-react";
+import { SignOutButton } from "@/components/SignOutButton";
 
 export default function HomePage() {
-  const features = [
-    {
-      icon: Zap,
-      title: "Lightning Fast",
-      description: "Built on Next.js 16 with React 19 for optimal performance and developer experience.",
-    },
-    {
-      icon: Shield,
-      title: "Secure by Default",
-      description: "Supabase Auth with Row Level Security ensures your data stays protected.",
-    },
-    {
-      icon: Users,
-      title: "User Management",
-      description: "Complete authentication flows including sign up, sign in, and profile management.",
-    },
-    {
-      icon: Sparkles,
-      title: "Subscription Tiers",
-      description: "Built-in free and pro tier system with gated features and upgrade flows.",
-    },
-  ]
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-violet-600/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-pink-600/8 rounded-full blur-[100px]" />
+      </div>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[80vh] flex items-center">
-        <div className="container mx-auto px-6 py-16">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              <Sparkles className="w-4 h-4" />
-              Frontend Engineering Assessment Template
-            </div>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-balance leading-tight">
-              Build something{" "}
-              <span className="text-primary">amazing</span>
-            </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground font-light leading-relaxed max-w-2xl mx-auto">
-              A modern SaaS starter template with authentication, subscription management,
-              and everything you need to demonstrate your frontend skills.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button size="lg" className="px-8 py-6 text-lg" asChild>
-                <Link href="/auth/signup">Get Started</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="px-8 py-6 text-lg" asChild>
-                <Link href="/upgrade">View Pricing</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="container mx-auto px-6 py-24 bg-secondary/30">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">What's included</h2>
-          <p className="text-center text-muted-foreground mb-16 text-lg max-w-2xl mx-auto">
-            Everything you need to build and showcase a modern web application.
-          </p>
-          <div className="grid md:grid-cols-2 gap-8">
-            {features.map((feature) => (
-              <div key={feature.title} className="flex gap-4 p-6 rounded-xl bg-card border border-border">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <feature.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tech Stack Section */}
-      <section className="container mx-auto px-6 py-24">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl font-bold">Modern Tech Stack</h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            {["Next.js 16", "React 19", "TypeScript", "Tailwind CSS", "Supabase", "Shadcn/ui"].map((tech) => (
-              <div key={tech} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary border border-border">
-                <Check className="w-4 h-4 text-primary" />
-                <span className="font-medium">{tech}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-6 py-24">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl font-bold">Ready to start?</h2>
-          <p className="text-lg text-muted-foreground">
-            Create an account and explore the features of this template.
-          </p>
-          <Button size="lg" className="px-8 py-6 text-lg" asChild>
-            <Link href="/auth/signup">Create Account</Link>
-          </Button>
-        </div>
-      </section>
+      <header className="relative z-10 border-b border-white/5">
+  <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center">
+        <Zap className="w-4 h-4 text-white" />
+      </div>
+      <span className="font-bold text-lg tracking-tight">GoViral<span className="text-violet-400">.AI</span></span>
     </div>
-  )
+    <SignOutButton />
+  </div>
+</header>
+
+      <main className="relative z-10 max-w-6xl mx-auto px-6">
+        <div className="pt-24 pb-16 text-center">
+          <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-full px-4 py-1.5 text-sm text-violet-300 mb-8">
+            <Star className="w-3.5 h-3.5 fill-current" />
+            Trained on 59M+ views of viral content
+          </div>
+          <h1 className="text-6xl lg:text-7xl font-black tracking-tight leading-none mb-6">
+            Know if your content<br />
+            <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">will go viral</span><br />
+            before you post.
+          </h1>
+          <p className="text-xl text-white/40 max-w-2xl mx-auto mb-10">
+            Upload your content, get an instant AI virality score from 0–100 with hook analysis, caption optimization, hashtag recommendations, and competitor insights.
+          </p>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            <a href="/analyze" className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 transition-all text-white font-bold px-8 py-4 rounded-xl text-lg">
+              Analyze Your Content <ArrowRight className="w-5 h-5" />
+            </a>
+            <a href="/analyze" className="flex items-center gap-2 bg-white/5 hover:bg-white/10 transition-colors text-white/70 font-semibold px-8 py-4 rounded-xl text-lg">
+              Try Free
+            </a>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4 pb-24">
+          {[
+            { icon: <Zap className="w-5 h-5" />, title: "Hook Analysis", desc: "AI scores your opening hook and first 3 seconds for maximum retention.", color: "text-amber-400 bg-amber-400/10" },
+            { icon: <TrendingUp className="w-5 h-5" />, title: "Virality Score", desc: "0-100 score breakdown across hook, thumbnail, caption, and engagement.", color: "text-violet-400 bg-violet-400/10" },
+            { icon: <Hash className="w-5 h-5" />, title: "Hashtag Pack", desc: "10 trending hashtags curated for your content type and platform.", color: "text-cyan-400 bg-cyan-400/10" },
+            { icon: <Music className="w-5 h-5" />, title: "Audio Trends", desc: "Discover trending audio that boosts algorithmic reach for your niche.", color: "text-pink-400 bg-pink-400/10" },
+            { icon: <Users className="w-5 h-5" />, title: "Competitor Insights", desc: "See what top creators in your niche do differently to get millions of views.", color: "text-green-400 bg-green-400/10" },
+            { icon: <Target className="w-5 h-5" />, title: "Caption Optimizer", desc: "Get 3 AI-rewritten captions optimized for clicks and engagement.", color: "text-red-400 bg-red-400/10" },
+          ].map(({ icon, title, desc, color }) => (
+            <div key={title} className="bg-white/3 border border-white/8 rounded-2xl p-6 hover:bg-white/5 transition-all">
+              <div className={`inline-flex p-2.5 rounded-xl mb-4 ${color}`}>{icon}</div>
+              <h3 className="font-bold text-lg mb-2">{title}</h3>
+              <p className="text-white/40 text-sm leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
 }
