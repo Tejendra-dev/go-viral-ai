@@ -37,12 +37,14 @@ export default async function DashboardPage() {
             </div>
             <span className="font-bold text-lg tracking-tight">GoViral<span className="text-violet-400">.AI</span></span>
           </div>
-          <nav className="flex items-center gap-6 text-sm text-white/50">
-  <a href="/" className="hover:text-white transition-colors">Home</a>
-  <a href="/analyze" className="text-white">Analyze</a>
-  <a href="/history" className="hover:text-white transition-colors">History</a>
-  <a href="/dashboard" className="hover:text-white transition-colors">Dashboard</a>
-  <SignOutButton />
+          <nav className="flex items-center gap-1 text-sm">
+  <a href="/" className="px-3 py-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-all">Home</a>
+  <a href="/analyze" className="px-3 py-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-all">Analyze</a>
+  <a href="/history" className="px-3 py-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-all">History</a>
+  <a href="/dashboard" className="px-3 py-1.5 rounded-lg bg-violet-500/20 text-violet-300 font-semibold transition-all">Dashboard</a>
+  <div className="ml-2 pl-2 border-l border-white/10">
+    <SignOutButton />
+  </div>
 </nav>
         </div>
       </header>

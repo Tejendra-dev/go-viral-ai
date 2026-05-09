@@ -3,11 +3,23 @@
 import { useState, useRef } from "react";
 import { AnalysisResult, Platform } from "@/types";
 import { ScoreRing } from "@/components/ScoreRing";
-import { Upload, Zap, TrendingUp, Music, Hash, Users, Target, Image as ImageIcon, FileText, Sparkles, Copy, Check } from "lucide-react";
 import { SignOutButton } from "@/components/SignOutButton";
+import { Upload, Zap, TrendingUp, Music, Hash, Users, Target, Image as ImageIcon, FileText, Sparkles, Copy, Check, BookMarked } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 const PLATFORMS: Platform[] = ["TikTok", "Instagram", "YouTube", "Twitter/X", "LinkedIn"];
 
+const ASPECT_RATIOS: Record<Platform, { ratio: string; label: string; w: number; h: number }> = {
+  "TikTok": { ratio: "9/16", label: "9:16 Vertical", w: 9, h: 16 },
+  "Instagram": { ratio: "4/5", label: "4:5 Portrait", w: 4, h: 5 },
+  "YouTube": { ratio: "16/9", label: "16:9 Landscape", w: 16, h: 9 },
+  "Twitter/X": { ratio: "16/9", label: "16:9 Landscape", w: 16, h: 9 },
+  "LinkedIn": { ratio: "1.91/1", label: "1.91:1 Banner", w: 1.91, h: 1 },
+};
+
 export default function AnalyzePage() {
+  const pathname = usePathname();
   const [platform, setPlatform] = useState<Platform>("TikTok");
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -16,6 +28,7 @@ export default function AnalyzePage() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -35,28 +48,42 @@ export default function AnalyzePage() {
   const analyze = async () => {
     if (!caption && !image) { setError("Add a caption or upload an image."); return; }
     setLoading(true); setError(""); setResult(null); setSaved(false);
-
     const formData = new FormData();
     formData.append("caption", caption);
     formData.append("platform", platform);
     if (image) formData.append("image", image);
-
     try {
       const res = await fetch("/api/analyze", { method: "POST", body: formData });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       setResult(json.data);
-
-      await fetch("/api/save-analysis", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content_type: image ? "image" : "caption", caption, platform, ...json.data }),
-      });
-      setSaved(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveAnalysis = async () => {
+    if (!result) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/save-analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content_type: image ? "image" : "caption", caption, platform, ...result }),
+      });
+      const json = await res.json();
+      if (json.error === "Unauthorized") {
+        window.location.href = "/auth/signup?returnUrl=/analyze";
+        return;
+      }
+      setSaved(true);
+    } catch {
+      // redirect to signup
+      window.location.href = "/auth/signup?returnUrl=/analyze";
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -65,10 +92,18 @@ export default function AnalyzePage() {
   };
 
   const viralityColor = result ? result.virality_score >= 75 ? "text-green-400" : result.virality_score >= 50 ? "text-amber-400" : "text-red-400" : "text-white";
+  const ar = ASPECT_RATIOS[platform];
+
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/analyze", label: "Analyze" },
+    { href: "/history", label: "History" },
+    { href: "/dashboard", label: "Dashboard" },
+  ];
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
-      <header className="border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-white/5 bg-[#0a0a0f]/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center">
@@ -76,25 +111,29 @@ export default function AnalyzePage() {
             </div>
             <span className="font-bold text-lg tracking-tight">GoViral<span className="text-violet-400">.AI</span></span>
           </div>
-         <nav className="flex items-center gap-6 text-sm text-white/50">
-  <a href="/" className="hover:text-white transition-colors">Home</a>
-  <a href="/analyze" className="text-white">Analyze</a>
-  <a href="/history" className="hover:text-white transition-colors">History</a>
-  <a href="/dashboard" className="hover:text-white transition-colors">Dashboard</a>
-  <SignOutButton />
-</nav>
+          <nav className="flex items-center gap-1 text-sm">
+            {navLinks.map(({ href, label }) => (
+              <Link key={href} href={href}
+                className={`px-3 py-1.5 rounded-lg transition-all ${pathname === href
+                  ? "bg-violet-500/20 text-violet-300 font-semibold"
+                  : "text-white/40 hover:text-white hover:bg-white/5"}`}>
+                {label}
+              </Link>
+            ))}
+            <div className="ml-2 pl-2 border-l border-white/10">
+              <SignOutButton />
+            </div>
+          </nav>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/20 rounded-full px-4 py-1.5 text-sm text-violet-300 mb-6">
-            <Sparkles className="w-3.5 h-3.5" />
-            AI-powered virality analysis
+            <Sparkles className="w-3.5 h-3.5" />AI-powered virality analysis
           </div>
           <h1 className="text-5xl font-black tracking-tight mb-4">
-            Will your content
-            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent"> go viral?</span>
+            Will your content<span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent"> go viral?</span>
           </h1>
           <p className="text-white/40 text-lg max-w-xl mx-auto">Upload your content and get an instant AI virality score with actionable feedback.</p>
         </div>
@@ -105,8 +144,8 @@ export default function AnalyzePage() {
               <label className="text-xs text-white/40 uppercase tracking-widest mb-2 block">Platform</label>
               <div className="flex flex-wrap gap-2">
                 {PLATFORMS.map((p) => (
-                  <button key={p} onClick={() => setPlatform(p)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${platform === p ? "bg-violet-500 text-white" : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"}`}>
+                  <button key={p} onClick={() => { setPlatform(p); setImage(null); setImagePreview(null); }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${platform === p ? "bg-violet-500 text-white shadow-lg shadow-violet-500/25" : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"}`}>
                     {p}
                   </button>
                 ))}
@@ -114,21 +153,30 @@ export default function AnalyzePage() {
             </div>
 
             <div>
-              <label className="text-xs text-white/40 uppercase tracking-widest mb-2 block">Thumbnail / Image <span className="text-white/20 normal-case">(optional)</span></label>
+              <label className="text-xs text-white/40 uppercase tracking-widest mb-2 block">
+                Thumbnail / Image <span className="text-white/20 normal-case">(optional · {ar.label})</span>
+              </label>
               <div onDrop={handleDrop} onDragOver={(e) => e.preventDefault()} onClick={() => fileRef.current?.click()}
-                className="relative border-2 border-dashed border-white/10 rounded-xl p-6 cursor-pointer hover:border-violet-500/40 hover:bg-violet-500/5 transition-all group">
+                className="relative border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-violet-500/40 hover:bg-violet-500/5 transition-all group overflow-hidden">
                 {imagePreview ? (
-                  <div className="relative">
-                    <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+                  <div className="relative w-full" style={{ aspectRatio: ar.ratio }}>
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <button onClick={(e) => { e.stopPropagation(); setImage(null); setImagePreview(null); }}
-                      className="absolute top-2 right-2 bg-black/60 rounded-full px-2 py-1 text-xs hover:bg-red-500 transition-colors">Remove</button>
+                      className="absolute top-3 right-3 bg-black/70 rounded-full px-3 py-1 text-xs hover:bg-red-500 transition-colors">
+                      Remove
+                    </button>
+                    <div className="absolute bottom-3 left-3 text-xs text-white/60 bg-black/50 px-2 py-1 rounded">
+                      {ar.label}
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-3 text-white/30 group-hover:text-white/50 transition-colors">
+                  <div className="flex flex-col items-center gap-3 text-white/30 group-hover:text-white/50 transition-colors p-8"
+                    style={{ aspectRatio: platform === "TikTok" || platform === "Instagram" ? "unset" : "unset" }}>
                     <Upload className="w-8 h-8" />
                     <div className="text-center">
                       <p className="text-sm">Drop image or click to upload</p>
-                      <p className="text-xs mt-1">PNG, JPG, WEBP up to 10MB</p>
+                      <p className="text-xs mt-1 text-violet-400/60">{ar.label} — optimized for {platform}</p>
                     </div>
                   </div>
                 )}
@@ -150,7 +198,7 @@ export default function AnalyzePage() {
             {error && <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-sm text-red-400">{error}</div>}
 
             <button onClick={analyze} disabled={loading}
-              className="w-full bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-base">
+              className="w-full bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-base shadow-lg shadow-violet-500/20">
               {loading ? (
                 <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Analyzing with AI...</>
               ) : (
@@ -188,7 +236,10 @@ export default function AnalyzePage() {
                     <ScoreRing score={result.caption_score} label="Caption" />
                     <ScoreRing score={result.engagement_score} label="Engage" />
                   </div>
-                  {saved && <p className="text-xs text-green-400/60 mt-3 text-center">✓ Saved to history</p>}
+                  <button onClick={saveAnalysis} disabled={saving || saved}
+                    className={`mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${saved ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-white/5 hover:bg-violet-500/20 text-white/60 hover:text-violet-300 border border-white/10 hover:border-violet-500/30"}`}>
+                    {saved ? <><Check className="w-4 h-4" />Saved to History</> : saving ? "Saving..." : <><BookMarked className="w-4 h-4" />Save to History</>}
+                  </button>
                 </div>
 
                 {[
@@ -199,7 +250,7 @@ export default function AnalyzePage() {
                   { icon: <Music className="w-4 h-4" />, label: "Trending Audio", content: result.audio_recommendations, color: "text-pink-400" },
                   { icon: <Target className="w-4 h-4" />, label: "Top Improvements", content: result.overall_feedback, color: "text-red-400" },
                 ].map(({ icon, label, content, color }) => (
-                  <div key={label} className="bg-white/3 border border-white/8 rounded-xl p-4">
+                  <div key={label} className="bg-white/3 border border-white/8 rounded-xl p-4 hover:bg-white/5 transition-all">
                     <div className={`flex items-center gap-2 mb-2 ${color}`}>
                       {icon}<span className="text-xs font-semibold uppercase tracking-wider">{label}</span>
                     </div>
@@ -218,7 +269,7 @@ export default function AnalyzePage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {result.hashtag_recommendations.split(" ").map((tag, i) => (
-                      <span key={i} className="bg-cyan-500/10 text-cyan-300 text-xs px-2 py-1 rounded-md font-mono">{tag}</span>
+                      <span key={i} className="bg-cyan-500/10 text-cyan-300 text-xs px-2 py-1 rounded-md font-mono hover:bg-cyan-500/20 cursor-pointer transition-all">{tag}</span>
                     ))}
                   </div>
                 </div>

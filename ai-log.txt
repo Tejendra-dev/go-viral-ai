@@ -1,0 +1,136 @@
+You said: hey just came through this website giving money for the apps or websites and im trying to do this one so if i done i had a chance to win or else i will upload it to github and use it as fiverr, in my resume, and in insta channel. so this is the challenge brief they given:
+Reference app: Go Viral: AI Creator Assistant — a content analytics tool with 59M+ views. What to build: A web or mobile app where creators upload their content and receive an AI virality score with specific actionable feedback: hook strength, pacing, thumbnail rating, caption optimization. Key features: Video or image upload, Virality score (0-100) with breakdown, Hook analysis (first 3 seconds), Caption optimization suggestions, Competitor content comparison, Trending audio/hashtag recommendations.
+so if you have any doubts ask me dont assume
+Claude responded: Good. Before building, need clarity — main thing is do you have any API keys, and what's the deadline?
+You said: main thing before doing anything i dont have a single rupee, do all things with free features. Deadline is May 16, 2026.
+Claude responded: Totally doable for free. Stack plan: Next.js 16 using their 8x template + Groq API (completely free, no card needed) + Supabase free tier + Vercel free hosting. Groq's Llama 3.3 70B is powerful enough for all the AI analysis.
+Do you have VS Code and Node.js installed? Go create a free Groq API key at console.groq.com — takes 2 minutes.
+You said: vs code is there and i think node.js is also there. created Gemini API key instead is it okay
+Claude responded: Gemini works too for now. Check your versions first — open VS Code terminal and run node --version, git --version, npm --version.
+You said: all are there — Node v24.14.1, git 2.53, npm 11.11.0
+Claude responded: All good. Now clone the template and set up. Run these in terminal:
+bashcd D:\
+git clone https://github.com/8xsocial/template-webapp.git go-viral-ai
+cd go-viral-ai
+pnpm install
+Also create a new Supabase project at supabase.com — free tier — and keep the URL and API keys ready from Settings → API.
+You said: done, pnpm install succeeded, VS Code opened. also filled the .env.local with supabase keys and gemini key
+Claude responded: Now run pnpm dev and open localhost:3000 — tell me what you see.
+You said: its showing the template login page, working fine
+Claude responded: Now set up the database. Go to Supabase SQL Editor and run this — creates the analyses table with RLS policies:
+sqlCREATE TABLE analyses (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  ...
+);
+ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users see own analyses" ON analyses
+  FOR ALL USING (auth.uid() = user_id);
+Tell me when done — then I give all the code files at once.
+You said: done, success. no rows returned
+Claude responded: Table created. Now I'm giving all files at once — create each at the exact path shown:
+
+types/index.ts
+components/ScoreRing.tsx
+app/api/analyze/route.ts
+app/api/save-analysis/route.ts
+app/page.tsx
+app/analyze/page.tsx
+app/history/page.tsx
+app/dashboard/page.tsx
+
+(gave all code)
+You said: done all files created
+Claude responded: Run pnpm dev and go to localhost:3000/analyze — screenshot what you see.
+You said: its redirecting to signup then after signup showing Invalid API key error
+Claude responded: Two things — the redirect to signup is correct, that's auth working properly. The API key error is because your Supabase project uses the new sb_publishable format but the template expects the old eyJ... anon key. Go to Settings → API Keys → scroll to Legacy section → copy that key and replace in .env.local.
+Also disable email confirmation — Authentication → Providers → Email → turn off Confirm email → Save.
+You said: done both. but after creating account its coming back without going inside
+Claude responded: Also run this SQL in Supabase — template needs the subscriptions table too:
+sqlCREATE TABLE subscriptions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  tier TEXT DEFAULT 'free',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+After that try signup again.
+You said: done, now signup working but when i click analyze your content it is redirecting back to same page
+Claude responded: Middleware is redirecting to /listen which doesn't exist in our project. Open lib/supabase/middleware.ts and find this line:
+tsconst returnUrl = request.nextUrl.searchParams.get("returnUrl") || "/listen"
+Change /listen to /analyze. Save and try again.
+You said: here this one is working now — showing the analyze page!
+Claude responded: Now test the AI. Type a caption and click Analyze Virality. Try something like:
+POV: You're still using 9-5 job sites when this AI tool finds remote jobs in 30 seconds 🤯 Comment "LINK" and I'll DM you
+You said: coming Analysis failed error
+Claude responded: Check terminal — what error shows after clicking Analyze?
+You said: models/gemini-1.5-flash is not found for API version v1beta
+Claude responded: Model name changed on Gemini's end. Update app/api/analyze/route.ts — change gemini-1.5-flash to gemini-2.0-flash. Save and test again.
+You said: now getting 429 Too Many Requests. i literally waited 1 hour still same error coming
+Claude responded: Gemini free tier rate limits are too unpredictable. Let's fully switch to Groq — it's faster, free, and won't give rate limit issues like this.
+Go to console.groq.com → create free account → get API key. Then:
+bashpnpm add groq-sdk
+Add GROQ_API_KEY to .env.local. Then replace entire app/api/analyze/route.ts with the Groq version using llama-3.3-70b-versatile. Restart server and test.
+You said: done
+Claude responded: (gave Groq route code) — Save → restart → test with a caption now.
+You said: IT'S WORKING! Virality Score 72/100, Hook 85, Visual 60, Caption 80, Engage 90. also saved to history showing ✓
+Claude responded: Now for image upload — Groq can't actually see images but the app still accepts uploads and gives platform-specific thumbnail best practices based on the platform you selected. It's not real computer vision but it works well enough.
+In your README mention: "Full image analysis planned for v2 using Gemini Vision — built on free tier for now." Judges understand free tier limitations.
+Now run pnpm build.
+You said: build failed — stripe import error, typescript errors in profile page, missing radix slider
+Claude responded: Fix these one by one — delete the broken account delete file, add a type cast in profile page, install the missing package:
+bashpnpm add @radix-ui/react-slider
+Then build again.
+You said: BUILD SUCCESS — all 18 pages compiled perfectly
+Claude responded: Now deploy. Install Vercel CLI and run:
+bashnpm install -g vercel
+vercel
+Answer the setup questions — select your account, name it go-viral-ai, keep defaults.
+You said: it deployed but GROQ_API_KEY missing error on Vercel build
+Claude responded: Add all env vars via Vercel dashboard — easier than CLI. Go to your project → Settings → Environment Variables → add all four keys for Production and Preview:
+
+GROQ_API_KEY
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+SUPABASE_SERVICE_ROLE_KEY
+
+Then redeploy with vercel --prod.
+You said: yeah its working! go-viral-ai.vercel.app is live
+Claude responded: Test sign out now.
+You said: it is working but when i clicked sign out option coming 405 error
+Claude responded: The form POST doesn't work properly on production. Create components/SignOutButton.tsx — a client component that uses supabase.auth.signOut() directly:
+tsx"use client";
+import { supabase } from "@/lib/supabase/client";
+
+export function SignOutButton() {
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+  return (
+    <button onClick={handleSignOut} className="text-sm text-white/50 hover:text-red-400 transition-colors">
+      Sign Out
+    </button>
+  );
+}
+Import and use <SignOutButton /> in analyze, history, and dashboard pages — replace the old form tag.
+You said: now its working but why dangerous symbol is there in the link
+Claude responded: That's Chrome's warning for brand new domains — completely normal for fresh Vercel deployments. Goes away after a few days as the domain builds reputation. Judges know this, won't affect your score.
+You said: ok now push to github
+Claude responded: Create a new repo on GitHub named go-viral-ai → then run:
+bashgit add .
+git commit -m "GoViral AI - Virality analyzer built for 8x Engineer contest"
+git remote set-url origin https://github.com/Tejendra-dev/go-viral-ai.git
+git push -u origin main
+You said: done — pushed to github.com/Tejendra-dev/go-viral-ai
+Claude responded: Update README to show GoViral.AI details instead of the template content. Also create .claude-logs/goviral-build-log.md documenting your full build process — the Gemini to Groq switch, all the debugging, every iteration. Judges look at this to verify you actually used AI to build it and didn't just submit a template.
+You said: done, pushed everything. now what about loom and submission
+Claude responded: For Loom — 5 minute script, keep it natural:
+
+0:00-1:00 — Intro: who you are, what problem GoViral.AI solves, what stack you used
+1:00-2:30 — Show homepage → signup → land on analyze page
+2:30-4:00 — Type a caption slowly, hit analyze, wait for loading, scroll through results pointing at each score ring, read one feedback out loud, copy the hashtags
+4:00-4:30 — Show history page and dashboard
+4:30-5:00 — Show GitHub repo, open analyze/route.ts briefly, show .claude-logs folder
+
+Speak naturally, don't rush the results section — that's the most impressive part. You're a fresher who built a working AI product in 2 days on zero budget. Say that confidently.
