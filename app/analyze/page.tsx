@@ -144,7 +144,7 @@ export default function AnalyzePage() {
               <label className="text-xs text-white/40 uppercase tracking-widest mb-2 block">Platform</label>
               <div className="flex flex-wrap gap-2">
                 {PLATFORMS.map((p) => (
-                  <button key={p} onClick={() => { setPlatform(p); setImage(null); setImagePreview(null); }}
+                  <button key={p} onClick={() => setPlatform(p)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${platform === p ? "bg-violet-500 text-white shadow-lg shadow-violet-500/25" : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"}`}>
                     {p}
                   </button>

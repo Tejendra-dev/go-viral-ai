@@ -61,7 +61,7 @@ export default async function HistoryPage() {
         ) : (
           <div className="grid gap-3">
             {items.map((item) => (
-              <div key={item.id} className="bg-white/3 border border-white/8 rounded-xl p-5 hover:bg-white/5 transition-all">
+              <div key={item.id} className="bg-white/3 border border-white/8 rounded-xl p-5 hover:bg-white/5 transition-all overflow-hidden">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
